@@ -55,13 +55,21 @@ object FetchFeeds {
     val title = (item \ "title").as[String]
     val result = title.split("-")
     val restyledTitle = result.last.mkString.trim + " - " + result.init.mkString.trim
-    val link = (item \ "link").as[String]
+    val url = (item \ "link").as[String]
+    val link = cleanLink(url)
     val description = (item \ "contentSnippet").as[String]
     val pubDate = (item \ "publishedDate").as[String]
     val date = simpleDateFormat.parse(pubDate)
     val dateTime = new DateTime(date)
 
     GoogleNewsFeed(Option(BSONObjectID.generate), restyledTitle, link, description, Option(dateTime))
+  }
+
+  private def cleanLink(link: String): String = {
+    val pattern = "url=.*$".r
+    val matches = pattern.findFirstIn(link)
+    val result = matches.getOrElse("url=").replace("url=","")
+    result
   }
 
   private def checkExistenceAndInsertIntoDB(feed: GoogleNewsFeed){
