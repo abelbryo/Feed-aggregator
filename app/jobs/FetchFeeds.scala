@@ -9,15 +9,13 @@ import org.joda.time.DateTime
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import models.GoogleNewsFeed
+import models.Feed
 
 import play.api.libs.json._
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import play.api.mvc.Controller
 import play.modules.reactivemongo.MongoController
-
-import reactivemongo.bson.BSONObjectID
 
 import play.api.libs.ws._
 import play.api.Play.current
@@ -51,7 +49,7 @@ object FetchFeeds {
     }
   }
 
-  private def mkNewsFeed(item: JsValue): GoogleNewsFeed = {
+  private def mkNewsFeed(item: JsValue): Feed = {
     val title = (item \ "title").as[String]
     val result = title.split("-")
     val restyledTitle = result.last.mkString.trim + " - " + result.init.mkString.trim
@@ -62,7 +60,7 @@ object FetchFeeds {
     val date = simpleDateFormat.parse(pubDate)
     val dateTime = new DateTime(date)
 
-    GoogleNewsFeed(Option(BSONObjectID.generate), restyledTitle, link, description, Option(dateTime))
+    Feed(restyledTitle, link, description, Option(dateTime))
   }
 
   private def cleanLink(link: String): String = {
@@ -72,13 +70,13 @@ object FetchFeeds {
     result
   }
 
-  private def checkExistenceAndInsertIntoDB(feed: GoogleNewsFeed){
+  private def checkExistenceAndInsertIntoDB(feed: Feed){
     val isAlreadyInDB = FeedDAO.getFeedByTitle(feed.title)
 
     isAlreadyInDB.map {entry =>
       entry match {
         case Nil => FeedDAO.persistFeed(feed)
-        case a : List[models.GoogleNewsFeed] => // Do nothing
+        case a : List[models.Feed] => // Do nothing
       }
     }
   }

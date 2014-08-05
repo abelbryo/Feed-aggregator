@@ -1,5 +1,7 @@
 package models
 
+import org.joda.time.DateTime
+
 case class User(role: String,
   firstName: String,
   lastName: String,
@@ -7,13 +9,6 @@ case class User(role: String,
   password: String,
   email: String,
   address: String,
-  feeds: List[GoogleNewsFeed])
+  feeds: List[Feed])
 
-object JsonFormats {
-  import play.api.libs.json.Json
-  import play.api.data._
-  import play.api.data.Forms._
 
-  // Generates Writes and Reads for User using Json Macros
-  implicit val userFormat = Json.format[User]
-}

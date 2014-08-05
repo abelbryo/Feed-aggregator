@@ -1,65 +1,56 @@
 package dao
 
+import play.api._
+import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-import models.GoogleNewsFeed
-import models.GoogleNewsFeed._
-
 import play.api.libs.json._
-import play.api.libs.json.Json
-import play.api.mvc.Action
-import play.api.mvc.Controller
-
 import play.api.Play.current
-import play.modules.reactivemongo.ReactiveMongoPlugin
 
-import reactivemongo.api.collections.default.BSONCollection
+import scala.concurrent.Future
+
 import reactivemongo.api._
+import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.MongoController
+import play.modules.reactivemongo.json.collection.JSONCollection
 
-import reactivemongo.bson._
-import reactivemongo.bson.BSONDocument
-import reactivemongo.bson.BSONDocumentIdentity
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.bson.BSONObjectIDIdentity
-import reactivemongo.bson.BSONStringHandler
-import reactivemongo.bson.Producer.nameValue2Producer
+import models.Feed
+import models.JsonFormats._
 
 object FeedDAO {
 
-  lazy val collection = ReactiveMongoPlugin.db.collection[BSONCollection]("googlenewsfeed")
+  lazy val collection = ReactiveMongoPlugin.db.collection[JSONCollection]("googlenewsfeed")
 
   def getAllFeeds = {
-    val query = BSONDocument() // query
-    val filter = BSONDocument() // projection
-    val cursor = collection.find(query, filter).cursor[GoogleNewsFeed]
-    val futureList = cursor.collect[List]()
+    val query = Json.obj() // query
+    val filter = Json.obj() // projection
+    val cursor: Cursor[Feed] = collection.find(query, filter).cursor[Feed]
+    val futureList: Future[List[Feed]] = cursor.collect[List]()
     futureList
   }
 
-  def persistFeed(googleNewsFeedEntry: GoogleNewsFeed) = {
-    collection.insert(googleNewsFeedEntry)
+  def persistFeed(feed: Feed) = {
+    collection.insert(feed)
   }
 
   def getFeedByTitle(title: String) = {
-    val cursor: Cursor[GoogleNewsFeed] = collection.
-      find(BSONDocument("title" -> title)).
-      sort(BSONDocument("pubDate" -> -1)).
-      cursor[GoogleNewsFeed]
+    val cursor: Cursor[Feed] = collection.
+      find(Json.obj("title" -> title)).
+      sort(Json.obj("pubDate" -> -1)).
+      cursor[Feed]
     val futureResult = cursor.collect[List]()
     futureResult
   }
 
   def getFeedByTitleContaining(searchTerm: String) = {
-    val query = BSONDocument("title" -> BSONDocument("$regex" -> (".*" + searchTerm + ".*"), "$options" -> "i"))
-    val filter = BSONDocument()
-    val result = collection.find(query, filter).cursor[GoogleNewsFeed].collect[List]()
+    val query = Json.obj("title" -> Json.obj("$regex" -> (".*" + searchTerm + ".*"), "$options" -> "i"))
+    val filter = Json.obj()
+    val result = collection.find(query, filter).cursor[Feed].collect[List]()
     result
   }
 
   def getFeedById(id: String) = {
-    val objectID = BSONObjectID(id)
-    val futureFeed = collection.find(BSONDocument("_id" -> objectID)).one[GoogleNewsFeed]
+    val objectID = Json.obj("$oid" -> id)
+    val futureFeed = collection.find(Json.obj("_id" -> objectID)).one[Feed]
     futureFeed
   }
 

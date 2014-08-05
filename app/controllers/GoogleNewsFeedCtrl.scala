@@ -12,6 +12,7 @@ import play.api.Play.current
 import scala.concurrent.Future
 
 import dao.FeedDAO
+import models.JsonFormats._
 
 object GoogleNewsFeedCtrl extends Controller with MongoController {
 
@@ -27,7 +28,7 @@ object GoogleNewsFeedCtrl extends Controller with MongoController {
       futureResult.map { item =>
         item match {
           case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
-          case a: List[models.GoogleNewsFeed] => Ok(Json.toJson(a))
+          case a: List[models.Feed] => Ok(Json.toJson(a))
         }
       } // end map
   } 
@@ -39,7 +40,7 @@ object GoogleNewsFeedCtrl extends Controller with MongoController {
     futureResult.map { item =>
       item match {
         case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
-        case a: List[models.GoogleNewsFeed] => Ok(Json.toJson(a))
+        case a: List[models.Feed] => Ok(Json.toJson(a))
       }
     } // end map
   }
