@@ -23,7 +23,10 @@ object FeedDAO {
   def getAllFeeds = {
     val query = Json.obj() // query
     val filter = Json.obj() // projection
-    val cursor: Cursor[Feed] = collection.find(query, filter).cursor[Feed]
+    val cursor: Cursor[Feed] = collection.
+      find(query, filter).
+      sort(Json.obj("pubDate" -> -1)).
+      cursor[Feed]
     val futureList: Future[List[Feed]] = cursor.collect[List]()
     futureList
   }
