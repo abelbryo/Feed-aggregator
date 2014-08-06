@@ -75,7 +75,10 @@ object FetchFeeds {
 
     isAlreadyInDB.map {entry =>
       entry match {
-        case Nil => FeedDAO.persistFeed(feed)
+        case Nil => {
+          FeedDAO.persistFeed(feed)
+          play.Logger.debug("Insert DONE ... ")
+        }
         case a : List[models.Feed] => // Do nothing
       }
     }

@@ -47,7 +47,10 @@ object FeedDAO {
   def getFeedByTitleContaining(searchTerm: String) = {
     val query = Json.obj("title" -> Json.obj("$regex" -> (".*" + searchTerm + ".*"), "$options" -> "i"))
     val filter = Json.obj()
-    val result = collection.find(query, filter).cursor[Feed].collect[List]()
+    val result: Future[List[Feed]] = collection.
+      find(query, filter).
+      sort(Json.obj("pubDate" -> -1)).
+      cursor[Feed].collect[List]()
     result
   }
 
