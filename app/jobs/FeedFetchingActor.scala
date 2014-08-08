@@ -28,7 +28,7 @@ object FeedFetchScheduler {
     import system.dispatcher
 
     // After 0 milliseconds repeating every 6 hours
-    val cancellable = system.scheduler.schedule(0 milliseconds, 6 hours) {
+    val cancellable = system.scheduler.schedule(0 milliseconds, 0.5 hours) {
       play.Logger.debug(s" >>> Launching Fetching @ [ ${new java.util.Date()} ]")
       fetchingActor ! "FETCH_DATA"
     }
