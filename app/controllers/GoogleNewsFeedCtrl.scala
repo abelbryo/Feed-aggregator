@@ -31,12 +31,12 @@ object GoogleNewsFeedCtrl extends Controller with MongoController {
           case a: List[models.Feed] => Ok(Json.toJson(a))
         }
       } // end map
-  } 
+  }
 
   def searchContains = Action.async(parse.json){ implicit request =>
     val searchTerm = request.body.\("title").as[String]
     val futureResult = FeedDAO.getFeedByTitleContaining(searchTerm)
-  
+
     futureResult.map { item =>
       item match {
         case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
@@ -44,7 +44,6 @@ object GoogleNewsFeedCtrl extends Controller with MongoController {
       }
     } // end map
   }
-
 
 }
 
