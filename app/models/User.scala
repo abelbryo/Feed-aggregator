@@ -8,7 +8,7 @@ case class User(role: String,
   username: String,
   password: String,
   email: String,
-  address: String,
-  feeds: List[Feed])
+  address: String
+)
 
 

@@ -44,4 +44,11 @@ object UserDAO {
     futureUser
   }
 
+  def findUserById(id: String) = {
+    val userId = Json.obj("$oid" -> id)
+    val futureUser: Future[Option[User]] = collection.find(userId).one[User]
+    futureUser
+  }
+
+
 }

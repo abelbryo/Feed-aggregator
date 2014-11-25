@@ -4,6 +4,11 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /login                      controllers.Application.login
+GET     /logout                     controllers.Application.logout
+# GET     /authenticate               controllers.Application.authenticate
+
+
 POST    /search                     controllers.GoogleNewsFeedCtrl.search
 POST    /searchbykeyword            controllers.GoogleNewsFeedCtrl.searchContains
 
