@@ -11,26 +11,32 @@ import play.modules.reactivemongo.MongoController
 import play.api.Play.current
 import scala.concurrent.Future
 
+
+import jp.t2v.lab.play2.auth._
+import jp.t2v.lab.play2.stackc.{ RequestWithAttributes, RequestAttributeKey, StackableController }
+
+import authentication._
+
 import dao.FeedDAO
 import models.JsonFormats._
 
-object GoogleNewsFeedCtrl extends Controller with MongoController {
+object GoogleNewsFeedCtrl extends Controller with MongoController with AuthElement with AuthConfigImpl {
 
-  def index = Action.async { implicit request =>
+  def index = AsyncStack(AuthorityKey -> Administrator) { implicit request =>
     val futureList = FeedDAO.getAllFeeds
     futureList.map { item => Ok(Json.toJson(item)) }
-  } // -- END index
+  }
 
-  def search = Action.async(parse.json) {
-    implicit request =>
-      val title = request.body.\("title").as[String]
-      val futureResult = FeedDAO.getFeedByTitle(title)
-      futureResult.map { item =>
-        item match {
-          case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
-          case a: List[models.Feed] => Ok(Json.toJson(a))
-        }
-      } // end map
+  def search = Action.async(parse.json) { implicit request =>
+    val title = request.body.\("title").as[String]
+    val futureResult = FeedDAO.getFeedByTitle(title)
+
+    futureResult.map { item =>
+      item match {
+        case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
+        case a: List[models.Feed] => Ok(Json.toJson(a))
+      }
+    }
   }
 
   def searchContains = Action.async(parse.json){ implicit request =>
@@ -42,7 +48,7 @@ object GoogleNewsFeedCtrl extends Controller with MongoController {
         case Nil => Ok(Json.toJson(Map("status" -> "Found Nothing 404")))
         case a: List[models.Feed] => Ok(Json.toJson(a))
       }
-    } // end map
+    }
   }
 
 }

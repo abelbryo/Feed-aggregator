@@ -6,9 +6,10 @@
 GET     /                           controllers.Application.index
 GET     /login                      controllers.Application.login
 GET     /logout                     controllers.Application.logout
-# GET     /authenticate               controllers.Application.authenticate
+GET     /authenticate               controllers.Application.authenticate
 
 
+GET     /home                       controllers.GoogleNewsFeedCtrl.index
 POST    /search                     controllers.GoogleNewsFeedCtrl.search
 POST    /searchbykeyword            controllers.GoogleNewsFeedCtrl.searchContains
 

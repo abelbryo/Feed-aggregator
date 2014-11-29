@@ -1,25 +1,25 @@
 @(message: String)
 
 @main("News Aggregator") {
-     <div class="wrapper">
+   <div class="wrapper">
 
-        <div class="content">
-            <form id="title-search" class="form-horizontal" role="form">
-                <div class="input-group">
-                    <input id="search-input-box" class="input-lg form-control" type="text" name="title" placeholder="Keyword search" />
-                    <span class="input-group-btn">
-                        <input id="search-btn" type="submit" value="Search" class="btn btn-primary btn-lg"/>
-                    </span>
-                </div>
-            </form>
+     <div class="content">
+       <form id="title-search" class="form-horizontal" role="form">
+         <div class="input-group">
+           <input id="search-input-box" class="input-lg form-control" type="text" name="title" placeholder="Keyword search" />
+           <span class="input-group-btn">
+             <input id="search-btn" type="submit" value="Search" class="btn btn-primary btn-lg"/>
+           </span>
+         </div>
+       </form>
 
-            <div id="response-box">
-            </div>
+       <div id="response-box">
+       </div>
 
-        </div>
-        <div class="footer panel-footer">
-            <p class="text-muted">All rights reserved <span class="footer-current-year"></span></p>
-
-        </div>
      </div>
+     <div class="footer panel-footer">
+         <p class="text-muted">All rights reserved <span class="footer-current-year"></span></p>
+
+     </div>
+   </div>
 }

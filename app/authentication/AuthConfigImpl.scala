@@ -4,7 +4,8 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.Play.current
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import jp.t2v.lab.play2.auth._
 import jp.t2v.lab.play2.stackc.{ RequestWithAttributes, RequestAttributeKey, StackableController }
@@ -26,16 +27,13 @@ trait AuthConfigImpl extends AuthConfig {
 
   val sessionTimeoutInSeconds: Int = 3600
 
-  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
-    // Future.successful()
-    Account.resolveUserById(id)
-  }
+  def resolveUser(email: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = Account.resolveUserByEmail(email)
 
   def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext) =
     Future.successful(Redirect(routes.GoogleNewsFeedCtrl.index))
 
   def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext) =
-    Future.successful(Ok("Successfully logged out"))
+    Future.successful(Redirect(routes.Application.login))
 
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) =
     Future.successful(Ok("Authentication failed"))
@@ -52,23 +50,27 @@ trait AuthConfigImpl extends AuthConfig {
 
       })
 
-  override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
+  override lazy val cookieSecureOption: Boolean =
+    play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
+    // play.api.Play.isProd(play.api.Play.current)
+
 }
 
 case class Account(email: String, password: String, permission: Permission)
 
 object Account {
 
-  def resolveUserById(id: String): Future[Option[Account]] = {
+  def resolveUserByEmail(email: String): Future[Option[Account]] = {
 
-    val futureUser: Future[Option[User]] = UserDAO.findUserById(id)
+    val futureUser: Future[Option[User]] = UserDAO.findUserByEmail(email)
 
-    futureUser.map { e =>
-      e match {
+    futureUser.map { user:Option[User] =>
+      user match {
         case None => None
-        case u: Some[User] => {
-          val permission = Permission.valueOf(u.get.role)
-          val userAccount = Account(u.get.email, u.get.password, permission)
+        case Some(u) => {
+          val permission = Permission.valueOf(u.role)
+          val userAccount = Account(u.email, u.password, permission)
+          play.Logger.debug(" === debug RESOLVING BY ID ===    " + userAccount.permission )
           Option[Account](userAccount)
         }
       }
@@ -76,23 +78,23 @@ object Account {
 
   }
 
-  def authenticate(email: String, password: String): Future[Option[Account]] = {
+  def authenticate(email: String, password: String): Option[Account] = {
 
     val futureUser: Future[Option[User]] = UserDAO.findUserByEmail(email)
 
-    futureUser.map { e =>
+    val resolvedUser = Await.result(futureUser, 1 minutes) // Block until user is resolved
 
-      val result: Option[User] = e.filter(u => u.password == password)
+    val result: Option[User] = resolvedUser.filter(u => u.password == password)
 
-      result match {
-        case None => None
-        case u: Some[User] => {
-          val permission = Permission.valueOf(u.get.role)
-          val userAccount = Account(u.get.email, u.get.password, permission)
-          Option[Account](userAccount)
-        }
+    result match {
+      case None => None
+      case Some(u) => {
+        val permission = Permission.valueOf(u.role)
+        val userAccount = Account(u.email, u.password, permission)
+        Option[Account](userAccount)
       }
     }
+
   }
 
 }

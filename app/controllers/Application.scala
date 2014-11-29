@@ -18,34 +18,28 @@ import authentication._
 import dao._
 import models._
 
-
-
-
 object Application extends Controller with MongoController with LoginLogout with AuthConfigImpl {
 
-//val loginForm = Form(mapping(
-//  "email" -> email,
-//  "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
-//  .verifying("Invalid email or password", result => result.isDefined)
-//)
+  val loginForm = Form(mapping(
+    "email" -> email,
+    "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
+    .verifying("Invalid email or password", result => result.isDefined))
 
   def login = Action { implicit request =>
-    // Ok(views.html.login(loginForm))
-    Ok("Ok login page")
+    Ok(views.html.login(loginForm))
   }
 
   def logout = Action.async { implicit request =>
-    Future.successful(Redirect(routes.Application.login))
+    gotoLogoutSucceeded
   }
 
-//def authenticate = Action.async {implicit request => 
-//  loginForm.bindFromRequest.fold(
-//    formWithErrors => { 
-//      Future.successful(BadRequest(views.html.login(formWithErrors)))
-//    },
-//    user => gotoLoginSucceeded(user.get.email)
-//    )
-//}
+  def authenticate = Action.async { implicit request =>
+    loginForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(BadRequest(views.html.login(formWithErrors)))
+      },
+      user => gotoLoginSucceeded(user.get.email))
+  }
 
   def index = Action {
     Ok(views.html.index("Hello Feeds"))
